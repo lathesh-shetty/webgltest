@@ -31,13 +31,7 @@
       var progressBarFull = document.querySelector("#unity-progress-bar-full");
       var fullscreenButton = document.querySelector("#unity-fullscreen-button");
       var warningBanner = document.querySelector("#unity-warning");
-    
-      // Shows a temporary message banner/ribbon for a few seconds, or
-      // a permanent error message on top of the canvas if type=='error'.
-      // If type=='warning', a yellow highlight color is used.
-      // Modify or remove this function to customize the visually presented
-      // way that non-critical warnings and error messages are presented to the
-      // user.
+      
       function unityShowBanner(msg, type) {
         function updateBannerVisibility() {
           warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
@@ -55,7 +49,7 @@
         }
         updateBannerVisibility();
       }
-    
+      
       var buildUrl = "Build";
       var loaderUrl = buildUrl + "/webglbuild.loader.js";
       var config = {
@@ -68,7 +62,7 @@
         productVersion: "0.1",
         showBanner: unityShowBanner,
       };
-    
+      
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         var meta = document.createElement('meta');
         meta.name = 'viewport';
@@ -80,22 +74,38 @@
         canvas.style.width = "960px";
         canvas.style.height = "600px";
       }
-    
+      
       loadingBar.style.display = "block";
-    
+      
       // Helper function to load and decompress gzipped files
       async function loadCompressedFile(url) {
         const response = await fetch(url);
         const compressedData = await response.arrayBuffer();
         return pako.ungzip(new Uint8Array(compressedData), { to: 'string' });
       }
-    
+      
+      // Helper function to load uncompressed files
+      async function loadFile(url) {
+        const response = await fetch(url);
+        return response.text();
+      }
+      
+      // Try to load the compressed file, fall back to uncompressed if not found
+      async function loadWithFallback(url) {
+        try {
+          return await loadCompressedFile(url + '.gz');
+        } catch (error) {
+          console.log('Compressed file not found, falling back to uncompressed');
+          return await loadFile(url);
+        }
+      }
+      
       // Load and execute the loader script
-      loadCompressedFile(loaderUrl + '.gz').then(loaderCode => {
+      loadWithFallback(loaderUrl).then(loaderCode => {
         var script = document.createElement('script');
         script.text = loaderCode;
         document.body.appendChild(script);
-    
+      
         // Now that the loader is ready, we can use it to load the rest
         createUnityInstance(canvas, config, (progress) => {
           progressBarFull.style.width = 100 * progress + "%";
@@ -111,6 +121,6 @@
         console.error('Failed to load the Unity loader script:', error);
         alert('Failed to load the game. Please check your internet connection and try again.');
       });
-    </script>
+      </script>
   </body>
 </html>
