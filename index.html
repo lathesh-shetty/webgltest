@@ -19,9 +19,6 @@
         <div id="unity-progress-bar-empty">
           <div id="unity-progress-bar-full"></div>
         </div>
-      </div>
-      <!-- Add this line to create the fullscreen button -->
-      <div id="unity-fullscreen-button"></div>
     </div>
     <script>
 
@@ -108,11 +105,7 @@
         }).then((unityInstance) => {
           loadingBar.style.display = "none";
           // Only set onclick if fullscreenButton exists
-          if (fullscreenButton) {
-            fullscreenButton.onclick = () => {
-              unityInstance.SetFullscreen(1);
-            };
-          }
+      
         }).catch((message) => {
           alert(message);
         });
